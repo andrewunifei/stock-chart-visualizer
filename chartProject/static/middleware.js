@@ -176,7 +176,7 @@ $('#ticker-submit').click(async () => {
             labels: dates,
             datasets: [
                 {
-                    label: 'Fechamento diário ajustado',
+                    label: 'Fechamento diário',
                     data: dailyAdjustedClose.slice(-100),
                     backgroundColor: [
                         'black',
