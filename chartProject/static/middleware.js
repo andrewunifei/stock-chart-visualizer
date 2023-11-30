@@ -13,85 +13,84 @@ $(document).ready(() => {
             'symbol': 'NVDA',
         },
         success: (res, status) => {
-            console.log(res) 
-            // const ticker = res['prices']['Meta Data']['2. Symbol']
-            // const chartTitle = ticker + ': dados dos últimos 500 dias.'
-            // const priceSeries = res['prices']['Time Series (Daily)']
-            // let dailyAdjustedClose = []
-            // let dates = []
+            const ticker = res['prices']['Meta Data']['2. Symbol']
+            const chartTitle = ticker + ': dados dos últimos 500 dias.'
+            const priceSeries = res['prices']['Time Series (Daily)']
+            let dailyAdjustedClose = []
+            let dates = []
 
-            // const priceDataParser = () => {
-            //     for(const key of priceSeries){
-            //         dailyAdjustedClose.push(Number(priceSeries[key]['5. adjusted close']))
-            //         dates.push(String(key))
-            //     }
-            // }
-            // priceDataParser()
+            const priceDataParser = () => {
+                for(const [key, value] of Object.entries(priceSeries)){
+                    dailyAdjustedClose.push(Number(value['4. close']))
+                    dates.push(String(key))
+                }
+            }
+            priceDataParser()
 
-            // const SMASeries = res['sma']['Technical Analysis: SMA']
-            // let SMAData = []
+            const SMASeries = res['sma']['Technical Analysis: SMA']
+            let SMAData = []
 
-            // const SMADataParser = () => {
-            //     for(const key of SMASeries){
-            //         SMAData.push(Number(SMASeries[key]['SMA']))
-            //     }
-            // }
-            // SMADataParser()
+            const SMADataParser = () => {
+                for(const [key, value] of Object.entries(SMASeries)){
+                    SMAData.push(Number(value['SMA']))
+                }
+            }
+            SMADataParser()
 
-            // // Estamos interessados apenas nos preços dos últimos 500 dias, então vamos fatiar o array
-            // dailyAdjustedClose.reverse().slice(500)
-            // SMAData.reverse().slice(500)
-            // dates.reveser().slice(500)
+            // Estamos interessados apenas nos preços dos últimos 500 dias, então vamos fatiar o array
+            dailyAdjustedClose.reverse().slice(500)
+            SMAData.reverse().slice(500)
+            dates.reverse().slice(500)
 
-            // // Usando Chart.js para plotar o gráfico
-            // const context = $('#chart').getContext('2d')
-            // const chart = new Chart(context, {
-            //     type: 'line',
-            //     data: {
-            //         labels: dates.slice,
-            //         datasets: [
-            //             {
-            //                 labels: 'Fechamento diário ajustado',
-            //                 data: dailyAdjustedClose,
-            //                 backgroundColor: [
-            //                     'black',
-            //                 ],
-            //                 borderColor: [
-            //                     'black',
-            //                 ],
-            //                 borderWidth: 1
-            //             },
-            //             {
-            //                 labels: 'Média Móvel Simples (SMA)',
-            //                 data: SMAData,
-            //                 backgroundColor: [
-            //                     'purple',
-            //                 ],
-            //                 borderColor: [
-            //                     'purple',
-            //                 ],
-            //                 borderWidth: 1
-            //             }
-            //         ]
-            //     },
-            //     options: {
-            //         responsive: true,
-            //         scale: {
-            //             y: {
+            // Usando Chart.js para plotar o gráfico
+            const context = document.getElementById('chart').getContext('2d')
+            const chart = new Chart(context, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [
+                        {
+                            labels: 'Fechamento diário ajustado',
+                            data: dailyAdjustedClose,
+                            backgroundColor: [
+                                'black',
+                            ],
+                            borderColor: [
+                                'black',
+                            ],
+                            borderWidth: 1
+                        },
+                        {
+                            labels: 'Média Móvel Simples (SMA)',
+                            data: SMAData,
+                            backgroundColor: [
+                                'purple',
+                            ],
+                            borderColor: [
+                                'purple',
+                            ],
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scale: {
+                        y: {
 
-            //             }
-            //         },
-            //         plugins: {
-            //             legend: {
-            //                 position: 'top',
-            //             },
-            //             title: {
-            //                 display: true,
-            //                 text: chartTitle, 
-            //             }
-            //         }
-            //     }
-            // })
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: chartTitle, 
+                        }
+                    }
+                }
+            })
         }
     })
 })
@@ -105,7 +104,7 @@ $('#ticker-submit').click(() => {
         data: {
             'symbol': tickerSelected,
         },
-        success: () => {
+        success: (res, status) => {
             const ticker = res['prices']['Meta Data']['2. Symbol']
             const chartTitle = ticker + ': dados dos últimos 500 dias.'
             const priceSeries = res['prices']['Time Series (Daily)']
@@ -113,8 +112,8 @@ $('#ticker-submit').click(() => {
             let dates = []
 
             const priceDataParser = () => {
-                for(const key of priceSeries){
-                    dailyAdjustedClose.push(Number(priceSeries[key]['5. adjusted close']))
+                for(const [key, value] of Object.entries(priceSeries)){
+                    dailyAdjustedClose.push(Number(value['4. close']))
                     dates.push(String(key))
                 }
             }
@@ -124,8 +123,8 @@ $('#ticker-submit').click(() => {
             let SMAData = []
 
             const SMADataParser = () => {
-                for(const key of SMASeries){
-                    SMAData.push(Number(SMASeries[key]['SMA']))
+                for(const [key, value] of Object.entries(SMASeries)){
+                    SMAData.push(Number(value['SMA']))
                 }
             }
             SMADataParser()
@@ -133,15 +132,16 @@ $('#ticker-submit').click(() => {
             // Estamos interessados apenas nos preços dos últimos 500 dias, então vamos fatiar o array
             dailyAdjustedClose.reverse().slice(500)
             SMAData.reverse().slice(500)
-            dates.reveser().slice(500)
+            dates.reverse().slice(500)
 
-            $('chart').remove()
-            $('chart-container').append('<canvas id="chart">')
-            const context = $('chart').getContext('2d')
+            $('#chart').remove()
+            $('#chart-container').append('<canvas id="chart"></canvas>')
+            const context = document.getElementById('chart').getContext('2d')
+
             const chart = new Chart(context, {
                 type: 'line',
                 data: {
-                    labels: dates.slice,
+                    labels: dates,
                     datasets: [
                         {
                             labels: 'Fechamento diário ajustado',
