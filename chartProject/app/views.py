@@ -6,9 +6,12 @@ from .models import StockData
 import requests
 import json
 import sys
+import environ
+
+env = environ.Env()
+environ.Env.read_env()
 
 # Create your views here.
-API_KEY = 'M6JBT0DHBK3W9NDA'
 DATABASE_ACCESS = True 
 
 def index(request):
@@ -16,6 +19,8 @@ def index(request):
 
 @csrf_exempt
 def get_stock_data(request):
+    API_KEY = env('API_KEY')
+
     if(request.body):
         parsed_req_body = json.loads(request.body)
 
