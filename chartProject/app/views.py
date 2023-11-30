@@ -16,11 +16,16 @@ def index(request):
 
 @csrf_exempt
 def get_stock_data(request):
-    if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
-        symbol = request.POST.get('symbol', 'null')
+    if True:
+        if(request.body):
+            parsed_req_body = json.loads(request.body)
+
+        # print(parsed_req_body, file=sys.stderr)
+        
+        symbol = parsed_req_body['symbol']
         symbol = symbol.upper()
 
-        price_series_url = f'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={symbol}&apikey={API_KEY}&outputsize=compact'
+        price_series_url = f'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={symbol}&apikey={API_KEY}&outputsize=full'
         sma_series_url = f'https://www.alphavantage.co/query?function=SMA&symbol={symbol}&interval=daily&time_period=10&series_type=close&apikey={API_KEY}'
 
         if DATABASE_ACCESS:
@@ -32,8 +37,6 @@ def get_stock_data(request):
         
         price_series = requests.get(price_series_url).json()
         sma_series = requests.get(sma_series_url).json()
-
-        print(price_series, file=sys.stderr)
 
         raw_dict = {}
         raw_dict['prices'] = price_series

@@ -4,93 +4,103 @@
 // ELE CONSEGUE BUSCAR OS DADOS COM SUCESSO DA API ALPHAVANTAGE,
 // PORÉM ELES MUDARAM A ESTRUTURA DE DADOS DA COISA
 
-$(document).ready(() => {
-    $.ajax({
-        // Envia um símbolo de ativo e recebe dados de preços e da Média Móvel Simples (SMA)
-        type: 'POST',
-        url: '/get_stock_data/',
-        data: {
-            'symbol': 'NVDA',
+$(document).ready(async () => {
+    let parsed
+
+    const res = await fetch('/get_stock_data/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
         },
-        success: (res, status) => {
-            const ticker = res['prices']['Meta Data']['2. Symbol']
-            const chartTitle = ticker + ': dados dos últimos 500 dias.'
-            const priceSeries = res['prices']['Time Series (Daily)']
-            let dailyAdjustedClose = []
-            let dates = []
+        body: JSON.stringify({
+            'symbol': 'NVDA'
+        }) 
+    })
+    
+    if(res.status === 200){
+        parsed = await res.json()
+    }
+    else{
+        console.log(res.status)
+        process.exit(1)
+    }
 
-            const priceDataParser = () => {
-                for(const [key, value] of Object.entries(priceSeries)){
-                    dailyAdjustedClose.push(Number(value['4. close']))
-                    dates.push(String(key))
-                }
-            }
-            priceDataParser()
+    const ticker = parsed['prices']['Meta Data']['2. Symbol']
+    const chartTitle = ticker + ': dados dos últimos 100 dias.'
+    const priceSeries = parsed['prices']['Time Series (Daily)']
+    let dailyAdjustedClose = []
+    let dates = []
 
-            const SMASeries = res['sma']['Technical Analysis: SMA']
-            let SMAData = []
+    const priceDataParser = () => {
+        for(const [key, value] of Object.entries(priceSeries)){
+            dailyAdjustedClose.push(Number(value['4. close']))
+            dates.push(String(key))
+        }
+    }
+    priceDataParser()
 
-            const SMADataParser = () => {
-                for(const [key, value] of Object.entries(SMASeries)){
-                    SMAData.push(Number(value['SMA']))
-                }
-            }
-            SMADataParser()
+    const SMASeries = parsed['sma']['Technical Analysis: SMA']
+    let SMAData = []
 
-            // Estamos interessados apenas nos preços dos últimos 500 dias, então vamos fatiar o array
-            dailyAdjustedClose.reverse().slice(500)
-            SMAData.reverse().slice(500)
-            dates.reverse().slice(500)
+    const SMADataParser = () => {
+        for(const [key, value] of Object.entries(SMASeries)){
+            SMAData.push(Number(value['SMA']))
+        }
+    }
+    SMADataParser()
 
-            // Usando Chart.js para plotar o gráfico
-            const context = document.getElementById('chart').getContext('2d')
-            const chart = new Chart(context, {
-                type: 'line',
-                data: {
-                    labels: dates,
-                    datasets: [
-                        {
-                            labels: 'Fechamento diário ajustado',
-                            data: dailyAdjustedClose,
-                            backgroundColor: [
-                                'black',
-                            ],
-                            borderColor: [
-                                'black',
-                            ],
-                            borderWidth: 1
-                        },
-                        {
-                            labels: 'Média Móvel Simples (SMA)',
-                            data: SMAData,
-                            backgroundColor: [
-                                'purple',
-                            ],
-                            borderColor: [
-                                'purple',
-                            ],
-                            borderWidth: 1
-                        }
-                    ]
+    // Estamos interessados apenas nos preços dos últimos 500 dias, então vamos fatiar o array
+    dailyAdjustedClose.reverse()
+    SMAData.reverse()
+    dates.reverse()
+
+    // Usando Chart.js para plotar o gráfico
+    const context = document.getElementById('chart').getContext('2d')
+    const chart = new Chart(context, {
+        type: 'line',
+        data: {
+            labels: dates,
+            datasets: [
+                {
+                    label: 'Fechamento diário',
+                    data: dailyAdjustedClose.slice(-100),
+                    backgroundColor: [
+                        'black',
+                    ],
+                    borderColor: [
+                        'black',
+                    ],
+                    borderWidth: 1
                 },
-                options: {
-                    responsive: true,
-                    scale: {
-                        y: {
-
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        },
-                        title: {
-                            display: true,
-                            text: chartTitle, 
-                        }
-                    }
+                {
+                    label: 'Média Móvel Simples (SMA)',
+                    data: SMAData.slice(-100),
+                    backgroundColor: [
+                        'purple',
+                    ],
+                    borderColor: [
+                        'purple',
+                    ],
+                    borderWidth: 1
                 }
-            })
+            ]
+        },
+        options: {
+            responsive: true,
+            scale: {
+                y: {
+
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: chartTitle, 
+                }
+            }
         }
     })
 })
@@ -130,9 +140,9 @@ $('#ticker-submit').click(() => {
             SMADataParser()
 
             // Estamos interessados apenas nos preços dos últimos 500 dias, então vamos fatiar o array
-            dailyAdjustedClose.reverse().slice(500)
-            SMAData.reverse().slice(500)
-            dates.reverse().slice(500)
+            dailyAdjustedClose.reverse()
+            SMAData.reverse()
+            dates.reverse()
 
             $('#chart').remove()
             $('#chart-container').append('<canvas id="chart"></canvas>')
@@ -144,8 +154,8 @@ $('#ticker-submit').click(() => {
                     labels: dates,
                     datasets: [
                         {
-                            labels: 'Fechamento diário ajustado',
-                            data: dailyAdjustedClose,
+                            label: 'Fechamento diário ajustado',
+                            data: dailyAdjustedClose.slice(-100),
                             backgroundColor: [
                                 'black',
                             ],
@@ -155,8 +165,8 @@ $('#ticker-submit').click(() => {
                             borderWidth: 1
                         },
                         {
-                            labels: 'Média Móvel Simples (SMA)',
-                            data: SMAData,
+                            label: 'Média Móvel Simples (SMA)',
+                            data: SMAData.slice(-100),
                             backgroundColor: [
                                 'purple',
                             ],
